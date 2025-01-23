@@ -216,7 +216,7 @@ const Navbar = () => {
   }, [cartItems]);
 
   return (
-    <header className="w-full top-0 left-0 right-0 z-50 bg-white">
+    <header className="w-full fixed lg:static top-0 left-0 right-0 z-50 bg-white">
       {/* Top Navigation Bar */}
       <div className="bg-white py-4 px-4 md:px-6 flex justify-between items-center shadow-md relative">
         {/* Hamburger Menu Button */}

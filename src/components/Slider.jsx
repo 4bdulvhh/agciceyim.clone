@@ -15,7 +15,7 @@ const images = [
 
 const Slider = () => {
   return (
-    <div className=" max-w-full">
+    <div className=" mt-[88px] lg:mt-0 max-w-full">
       <Swiper
         spaceBetween={50}
         slidesPerView={1}
