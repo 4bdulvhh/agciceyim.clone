@@ -141,7 +141,7 @@ const MobileMenu = ({ isMenuOpen, setIsMenuOpen, categories }) => {
                     >
                       {subcategories.map((subcategory) => (
                         <Link
-                          onClick={() => setIsMenuOpen(false)}
+                          onClick={() => {setIsMenuOpen(false),toggleCategory(mainCategory)}}
                           key={subcategory}
                           to={`/category/${encodeURIComponent(mainCategory)}/${encodeURIComponent(subcategory)}`}
                           className="block py-1 text-gray-600 hover:text-gray-900"
