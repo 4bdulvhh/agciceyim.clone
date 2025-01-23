@@ -123,7 +123,7 @@ function Content() {
   }, [subCategory, products]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen mt-[88px] lg:mt-0 bg-gray-50">
       {subCategory && (
         <div className="max-w-7xl mx-auto pt-8 px-4">
           <h1 className="text-4xl font-medium font-pacifico text-center mb-4">
