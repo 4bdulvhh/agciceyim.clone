@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+*{
+  box-sizing: border-box;
+
+  margin: 0;
+  padding: 0 ;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+
+.slider-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+  padding-bottom: 30px; 
+}
+
+
+.slider-image {
+  width: 100%;
+  height: auto;
+  
+}
+
+
+.swiper-pagination {
+  position: absolute;
+  top: 1000px; 
+  left: 50%;
+  transform: translateX(0%);
+  transform: translateY(10%);
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+.custom-scroll::-webkit-scrollbar {
+  display: none; 
+}
+.swiper-pagination-bullet {
+  width: 14px;
+  height: 14px;
+  background: #0CE6DF; 
+  border-radius: 50%;
+  border: 2px solid transparent;
+  opacity: 1;
+  transition: opacity 0.3s, transform 0.3s;
+}
+.swiper-pagination-bullet:hover{
+  background: white;
+  opacity: 1;
+  transform: scale(1.2); 
+  border-color: #0CE6DF
+}
+.swiper-pagination-bullet-active {
+  background: white;
+  opacity: 1;
+  transform: scale(1.2); 
+  border-color: #0CE6DF; 
+}
+
+.swiper-pagination-bullet :hover{
+  background: white;
+  opacity: 1;
+  transform: scale(1.2); 
+  border-color: #0CE6DF;
+}
