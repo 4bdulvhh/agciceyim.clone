@@ -1,16 +1,12 @@
-import React, {
-  useState,
-  useMemo,
-  createContext,
-  useContext,
-  useEffect,
-} from "react";
+import React, { useState, useMemo, createContext, useContext, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import DATA from "../data.json";
 import { IoIosLock } from "react-icons/io";
 import { FaBasketShopping } from "react-icons/fa6";
 import LoginModal from "./LoginModal";
 
+// Cart Context
 export const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
@@ -74,8 +70,117 @@ export const CartProvider = ({ children }) => {
   );
 };
 
+// Mobile Menu Component
+const MobileMenu = ({ isMenuOpen, setIsMenuOpen, categories }) => {
+  const [openCategory, setOpenCategory] = useState(null);
+
+  const toggleCategory = (category) => {
+    setOpenCategory(openCategory === category ? null : category);
+  };
+
+  const menuVariants = {
+    hidden: { 
+      opacity: 0, 
+      y: -20,
+      transition: { duration: 0.3 }
+    },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.3 }
+    }
+  };
+
+  const accordionVariants = {
+    hidden: { 
+      height: 0, 
+      opacity: 0,
+      transition: { duration: 0.3 }
+    },
+    visible: { 
+      height: 'auto', 
+      opacity: 1,
+      transition: { duration: 0.3 }
+    }
+  };
+
+  return (
+    <AnimatePresence>
+      {isMenuOpen && (
+        <motion.div 
+          initial="hidden"
+          animate="visible"
+          exit="hidden"
+          variants={menuVariants}
+          className="lg:hidden fixed top-[72px] left-0 right-0 h-[calc(100vh-72px)] bg-white shadow-lg z-50 custom-scroll overflow-y-auto"
+        >
+          <div className="bg-gray-50 py-2 px-4">
+            <h3 className="text-gray-700 font-medium mb-2">Kateqoriyalar</h3>
+            {Object.entries(categories).map(([mainCategory, subcategories]) => (
+              <div key={mainCategory} className="mb-3">
+                <button
+                  onClick={() => toggleCategory(mainCategory)}
+                  className="w-full text-left text-gray-600 font-medium mb-1 flex justify-between items-center"
+                >
+                  {mainCategory}
+                  <motion.span
+                    animate={{ rotate: openCategory === mainCategory ? 180 : 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    ▼
+                  </motion.span>
+                </button>
+                <AnimatePresence>
+                  {openCategory === mainCategory && (
+                    <motion.div
+                      initial="hidden"
+                      animate="visible"
+                      exit="hidden"
+                      variants={accordionVariants}
+                      className="pl-4 overflow-hidden"
+                    >
+                      {subcategories.map((subcategory) => (
+                        <Link
+                          onClick={() => setIsMenuOpen(false)}
+                          key={subcategory}
+                          to={`/category/${encodeURIComponent(mainCategory)}/${encodeURIComponent(subcategory)}`}
+                          className="block py-1 text-gray-600 hover:text-gray-900"
+                        >
+                          {subcategory}
+                        </Link>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ))}
+          </div>
+
+          <div className="border-t border-gray-200">
+            {[
+              { to: "/xidmetler", label: "Xidmətlər" },
+              { to: "/sertler-ve-qaydalar", label: "Çatdırılma və ödəniş" },
+              { to: "/filiallar", label: "Filiallar" },
+              { to: "/statuslar", label: "Statuslar" }
+            ].map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                className="block px-4 py-2 text-gray-600 hover:text-gray-900"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
+// Main Navbar Component
 const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -83,7 +188,6 @@ const Navbar = () => {
 
   const categories = useMemo(() => {
     const categoryMap = {};
-
     DATA.forEach((product) => {
       if (!categoryMap[product.əsas_kateqoriya]) {
         categoryMap[product.əsas_kateqoriya] = new Set();
@@ -112,10 +216,10 @@ const Navbar = () => {
   }, [cartItems]);
 
   return (
-    <header className="w-full fixed top-0 left-0 right-0 z-50 bg-white">
+    <header className="w-full top-0 left-0 right-0 z-50 bg-white">
       {/* Top Navigation Bar */}
       <div className="bg-white py-4 px-4 md:px-6 flex justify-between items-center shadow-md relative">
-        {/* Hamburger Menu Button - Only visible on mobile */}
+        {/* Hamburger Menu Button */}
         <button
           className="lg:hidden text-gray-600 hover:text-gray-900"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -136,95 +240,38 @@ const Navbar = () => {
           </svg>
         </button>
 
-        {/* Mobile Menu */}
-        {isMenuOpen && (
-          <div className="lg:hidden fixed top-[72px] left-0 right-0 h-[calc(100vh-72px)] bg-white shadow-lg z-50 custom-scroll overflow-y-auto">
-            {/* Categories Section in Mobile Menu */}
-            <div className="bg-gray-50 py-2 px-4">
-              <h3 className="text-gray-700 font-medium mb-2">Kateqoriyalar</h3>
-              {Object.entries(categories).map(([mainCategory, subcategories]) => (
-                <div key={mainCategory} className="mb-3">
-                  <div className="text-gray-800 font-medium mb-1">
-                    {mainCategory}
-                  </div>
-                  <div className="pl-4">
-                    {subcategories.map((subcategory) => (
-                      <Link
-                        onClick={() => setIsMenuOpen(false)}
-                        key={subcategory}
-                        to={`/category/${encodeURIComponent(
-                          mainCategory
-                        )}/${encodeURIComponent(subcategory)}`}
-                        className="block py-1 text-gray-600 hover:text-gray-900"
-                      >
-                        {subcategory}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
+        {/* Mobile Menu Component */}
+        <MobileMenu 
+          isMenuOpen={isMenuOpen} 
+          setIsMenuOpen={setIsMenuOpen} 
+          categories={categories} 
+        />
 
-            {/* Regular Menu Items */}
-            <div className="border-t border-gray-200">
-              <Link
-                to="/xidmetler"
-                className="block px-4 py-2 text-gray-600 hover:text-gray-600"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Xidmətlər
-              </Link>
-              <Link
-                to="/sertler-ve-qaydalar"
-                className="block px-4 py-2 text-gray-600 hover:text-gray-600"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Çatdırılma və ödəniş
-              </Link>
-              <Link
-                to="/filiallar"
-                className="block px-4 py-2 text-gray-600 hover:text-gray-600"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Filiallar
-              </Link>
-              <Link
-                to="/statuslar"
-                className="block px-4 py-2 text-gray-600 hover:text-gray-600"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Statuslar
-              </Link>
-            </div>
-          </div>
-        )}
-
-        {/* Links Section - Hidden on mobile */}
+        {/* Desktop Links */}
         <div className="hidden lg:flex justify-center space-x-3 px-6">
-          <Link to="/xidmetler" className="text-gray-600 hover:text-gray-600">
-            Xidmətlər
-          </Link>
-          <Link
-            to="/sertler-ve-qaydalar"
-            className="text-gray-600 hover:text-gray-600"
-          >
-            Çatdırılma və ödəniş
-          </Link>
-          <Link to="/filiallar" className="text-gray-600 hover:text-gray-600">
-            Filiallar
-          </Link>
-          <Link to="/statuslar" className="text-gray-600 hover:text-gray-600">
-            Statuslar
-          </Link>
+          {[
+            { to: "/xidmetler", label: "Xidmətlər" },
+            { to: "/sertler-ve-qaydalar", label: "Çatdırılma və ödəniş" },
+            { to: "/filiallar", label: "Filiallar" },
+            { to: "/statuslar", label: "Statuslar" }
+          ].map((item) => (
+            <Link 
+              key={item.to} 
+              to={item.to} 
+              className="text-gray-600 hover:text-gray-600"
+            >
+              {item.label}
+            </Link>
+          ))}
         </div>
 
-        {/* Logo Section */}
+        {/* Logo */}
         <div className="lg:absolute lg:left-1/2 lg:transform lg:-translate-x-1/2">
           <Link to="/" className="flex items-center">
             <div className="w-[125px]">
               <img
                 src="https://agciceyim.az/template/design/assets/images/ag2.svg"
-                alt=""
+                alt="Logo"
               />
             </div>
           </Link>
@@ -233,7 +280,8 @@ const Navbar = () => {
         {/* Icons Section */}
         <div className="flex items-center space-x-2 md:space-x-6">
           <span className="hidden md:inline text-gray-600">+99455 3502121</span>
-          <div className="relative inline-block text-left"></div>
+          
+          {/* Login Button */}
           <button
             className="text-gray-600 hover:text-gray-900 flex items-center"
             onClick={() => setIsLoginModalOpen(true)}
@@ -243,7 +291,7 @@ const Navbar = () => {
             </div>
           </button>
 
-          {/* Cart Button and Side Panel */}
+          {/* Cart Button */}
           <div className="relative">
             <button
               className="text-gray-600 hover:text-gray-900 flex items-center"
@@ -258,101 +306,109 @@ const Navbar = () => {
             </button>
 
             {/* Cart Side Panel */}
-            {isCartOpen && (
-              <div className="fixed inset-y-0 right-0 w-full sm:w-96 bg-white shadow-xl z-50 flex flex-col">
-                {/* Cart Header */}
-                <div className="flex items-center justify-between p-4 border-b">
-                  <h2 className="text-lg font-semibold">Səbət</h2>
-                  <button
-                    onClick={() => setIsCartOpen(false)}
-                    className="p-1 hover:bg-gray-100 rounded-full"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      className="h-5 w-5"
+            <AnimatePresence>
+              {isCartOpen && (
+                <motion.div 
+                  initial={{ x: "100%" }}
+                  animate={{ x: 0 }}
+                  exit={{ x: "100%" }}
+                  transition={{ type: "tween" }}
+                  className="fixed inset-y-0 right-0 w-full sm:w-96 bg-white shadow-xl z-50 flex flex-col"
+                >
+                  {/* Cart Header */}
+                  <div className="flex items-center justify-between p-4 border-b">
+                    <h2 className="text-lg font-semibold">Səbət</h2>
+                    <button
+                      onClick={() => setIsCartOpen(false)}
+                      className="p-1 hover:bg-gray-100 rounded-full"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </button>
-                </div>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        className="h-5 w-5"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </button>
+                  </div>
 
-                {/* Cart Items */}
-                <div className="flex-1 overflow-y-auto p-4">
-                  {cartItems.map((item) => (
-                    <div key={item.id} className="flex gap-4 mb-4">
-                      <img
-                        src={item.image || "/api/placeholder/80/80"}
-                        alt={item.name || "Product Image"}
-                        className="w-20 h-20 object-cover rounded"
-                      />
-                      <div className="flex-1">
-                        <h3 className="font-medium">
-                          {item.name || "Məhsul adı yoxdur"}
-                        </h3>
-                        <div className="flex items-center justify-between mt-2">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm">
-                              {item.quantity || 0} x{" "}
-                              {(parseFloat(item.price) || 0).toFixed(2)}₼
-                            </span>
-                          </div>
-                          <button
-                            className="text-red-500 hover:text-red-600"
-                            onClick={() => removeFromCart(item.id)}
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              className="h-4 w-4"
+                  {/* Cart Items */}
+                  <div className="flex-1 overflow-y-auto p-4">
+                    {cartItems.map((item) => (
+                      <div key={item.id} className="flex gap-4 mb-4">
+                        <img
+                          src={item.image || "/api/placeholder/80/80"}
+                          alt={item.name || "Product Image"}
+                          className="w-20 h-20 object-cover rounded"
+                        />
+                        <div className="flex-1">
+                          <h3 className="font-medium">
+                            {item.name || "Məhsul adı yoxdur"}
+                          </h3>
+                          <div className="flex items-center justify-between mt-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm">
+                                {item.quantity || 0} x{" "}
+                                {(parseFloat(item.price) || 0).toFixed(2)}₼
+                              </span>
+                            </div>
+                            <button
+                              className="text-red-500 hover:text-red-600"
+                              onClick={() => removeFromCart(item.id)}
                             >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M6 18L18 6M6 6l12 12"
-                              />
-                            </svg>
-                          </button>
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                className="h-4 w-4"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M6 18L18 6M6 6l12 12"
+                                />
+                              </svg>
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
 
-                {/* Cart Footer */}
-                <div className="border-t p-4 space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium">Cəmi:</span>
-                    <span className="text-lg font-semibold text-[#00e5e5]">
-                      {total.toFixed(2)}₼
-                    </span>
+                  {/* Cart Footer */}
+                  <div className="border-t p-4 space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="font-medium">Cəmi:</span>
+                      <span className="text-lg font-semibold text-[#00e5e5]">
+                        {total.toFixed(2)}₼
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button className="py-2 px-4 bg-black text-white rounded hover:bg-gray-800">
+                        Səbət
+                      </button>
+                      <button className="py-2 px-4 bg-[#00e5e5] text-white rounded hover:bg-[#00c5c5]">
+                        Sifarişi tamamla
+                      </button>
+                    </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button className="py-2 px-4 bg-black text-white rounded hover:bg-gray-800">
-                      Səbət
-                    </button>
-                    <button className="py-2 px-4 bg-[#00e5e5] text-white rounded hover:bg-[#00c5c5]">
-                      Sifarişi tamamla
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </div>
 
-      {/* Category Navigation Bar - Only visible on desktop */}
+      {/* Category Navigation Bar - Desktop Only */}
       <nav className="hidden lg:block bg-[#0CE6DF] py-2 px-4 md:px-6">
         <div className="flex flex-wrap justify-center gap-4">
           {Object.entries(categories).map(([mainCategory, subcategories]) => (
@@ -361,7 +417,12 @@ const Navbar = () => {
               className="relative group text-[#FFFFFF] hover:bg-[#0daba5] p-2 rounded uppercase text-sm"
             >
               <span className="cursor-pointer">{mainCategory}</span>
-              <div className="absolute left-0 mt-1 hidden group-hover:block bg-white shadow-lg w-48 z-50">
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="absolute left-0 mt-1 hidden group-hover:block bg-white shadow-lg w-48 z-50"
+              >
                 {subcategories.map((subcategory) => (
                   <Link
                     key={subcategory}
@@ -373,29 +434,19 @@ const Navbar = () => {
                     {subcategory}
                   </Link>
                 ))}
-              </div>
+              </motion.div>
             </div>
           ))}
         </div>
       </nav>
 
+      {/* Login Modal */}
       <LoginModal
         isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}/>
-      
-     
-        <style jsx global>{`
-          body {
-            padding-top: 72px; /* Height of the navbar */
-          }
-          @media (min-width: 1024px) {
-            body {
-              padding-top: 128px; /* Height of navbar + category bar on desktop */
-            }
-          }
-        `}</style>
-      </header>
-    );
-  };
-  
-  export default Navbar;
+        onClose={() => setIsLoginModalOpen(false)}
+      />
+    </header>
+  );
+};
+
+export default Navbar;
